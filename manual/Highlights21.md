@@ -43,31 +43,33 @@ Dans `conf/my.subproject.routes`
 GET   /                   my.subproject.controllers.Application.index
 ```
 
-And then, you can integrate this component into your main application, by wiring the Router, such as:
+Ensuite, vous pouvez integrer ce composant dans l'application principal, en cablant le routeur:
 
 ```
-# The home page
+# La page d'accueil
 GET   /                   controllers.Application.index
 
-# Include a sub-project
+# Inclure un sous-projet
 ->    /my-subproject      my.subproject.Routes
 
-# The static assets
+# Les resources statiques
 GET   /public/*file       controllers.Assets.at(file)
 ```
 
-In the configuration, at runtime a call to the `/my-subproject` URL will eventually invoke the `my.subproject.controllers.Application.index` Action.
+Dans la configuration, à l'exécution un appel à l'URL `/my-subproject` URL invoquera éventuellemnt l'action `my.subproject.controllers.Application.index`.
 
-> Note: in order to avoid name collision issues with the main application, always make sure that you define a subpackage within your controller classes that belong to a sub project (i.e. `my.subproject` in this particular example). You'll also need to make sure that the subproject's Assets controller is defined in the same name space.
+> Remarque: afin d'éviter les collisions avec l'application principale, assurez vous de définir un sous package au seins de vos classes de controleur qui appartienent à un sous projet(ici `my.subproject`).
+> 
+> Vous devrez également vous assurer que le controleur de resources du sous projet soit défini dans le même espace de nom.
 
-More information about this feature can be found at [[Working with sub-projects|SBTSubProjects]].
+Plus de détail à ce sujet peut être trouvé ici [[Travailler avec des sous projets|SBTSubProjects]].
 
 
-## `Http.Context` propagation in the Java API
+## Propagation de `Http.Context` dans l'API Java
 
-In Play 2.0, the HTTP context was lost during the asynchronous callback, since these code fragment are run on different thread than the original one handling the HTTP request.
+Dans Play 2.0, le context HTTP était perdu lors de l'appel asynchrone, du fait ce ce fragment de code s'execute dans une thread différent de celui qui a traité la requête HTTP.
 
-Consider:
+Considérons:
 
 ```
 public static Result index() {
@@ -81,7 +83,7 @@ public static Result index() {
 }
 ```
 
-This code wasn't working this way. For really good reason, if you think about the underlying asynchronous architecture, but yet it was really surprising for Java developers.
+Ce code ne marche pas. Pour une raison simple, si vous avez l'architecture asynchrone sous jacente en tête, mais en fait cela restait surprenant pour des développer Java.
 
 We eventually found a way to solve this problem and to propagate the `Http.Context` over a stack spanning several threads, so this code is now working this way.
 
