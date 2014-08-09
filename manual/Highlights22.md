@@ -1,13 +1,13 @@
 <!--- Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com> -->
-# What's new in Play 2.2
+# Quoi de neuf dans Play 2.2
 
-## New results structure for Java and Scala
+## Nouvelle structure de resultats pour Java et Scala
 
-Previously, results could be either plain or async, chunked or simple.  Having to deal with all these different types made action composition and filters hard to implement, since often there was functionality that needed to be applied to all types of results, but code had to implemented to recursively unwrap asynchronous results and to apply the same logic to chunked and simple results.
+Auparavant, les résultats pouvaient être soit simple ou asynchrone, fractionné ou simple. Avoir à traiter avec tous ces différents types rendait la composition d'action et les filtres difficiles à mettre en œuvre, car, souvent, il y avait une fonctionnalité qui devait être appliquée à tous les types de résultats, mais le code devait déballer récursivement les résultats asynchrones et d'appliquer la même logique à fragmenté et des résultats simples. 
 
-It also created an artificial distinction between asynchronous and synchronous actions in Play, which caused confusion, leading people to think that Play could operate in a synchronous and asynchronous modes.  In fact, Play is 100% asynchronous, the only thing that differentiates whether a result is returned asynchronously or not is whether other asynchronous actions, such as IO, need to be done during action processing.
+Il a également créé une distinction artificielle entre actions asynchrone et synchrone dans Play, qui ont provoqué la confusion, conduisant les gens à penser que Play pourrait fonctionner dans un mode synchrone et asynchrone. En fait, Play est 100% asynchrone, la seule chose qui différencie si un résultat est retourné de façon asynchrone ou non est de savoir si d'autres actions asynchrones, tels que IO, doivent être faites pendant le traitement de l'action.
 
-So we've simplified the structure for results in Java and Scala.  There is now only one result type, `SimpleResult`.  The `Result` superclass still works in many places but is deprecated.
+Ainsi nous avons simplifié la stucture de résultat pour Java et Scala. Il y a maintenant qu'un seul type de résultat, `SimpleResult`.  La super classes `Result` est toujours utilisée mais elle est marqué comme dépréciée.
 
 In Java applications, this means actions can now just return `Promise<SimpleResult>` if they wish to do asynchronous processing during a request, while Scala applications can use the `async` action builder, like this:
 

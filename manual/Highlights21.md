@@ -83,15 +83,16 @@ public static Result index() {
 }
 ```
 
-Ce code ne marche pas. Pour une raison simple, si vous avez l'architecture asynchrone sous jacente en tête, mais en fait cela restait surprenant pour des développer Java.
+Ce code ne fonctionnait pas. Pour de très bonne raison, si vous pensez à l'architecture asynchrone sous-jacente, mais cela restait vraiment surprenant pour les développeurs Java.
 
-We eventually found a way to solve this problem and to propagate the `Http.Context` over a stack spanning several threads, so this code is now working this way.
+Nous avons finalement trouvé un moyen de résoudre ce problème et à propager le `Http.Context` sur ​​une pile sur plusieurs threads, ainsi maintenant ce code fonctionne.
 
-## Better threading model for the Java API
 
-While running asynchronous code over mutable data structures, chances are right that you hit some race conditions if you don't synchronize properly your code. Because Play promotes highly asynchronous and non-blocking code, and because Java data structure are mostly mutable and not thread-safe, it is the responsibility of your code to deal with the synchronization issues.
+## Un meilleur modèle de thread pour l'API Java
 
-Consider:
+Lors de l'exécution du code asynchrone sur des structures de données mutables, les chances sont grandes que vous recontriez des situations de compétition (ndt: "race conditions") si vous ne synchronisez pas correctement votre code. Du fait que Play favorise fortement le code asynchrone et non-bloquant, et parce que les structures de données Java sont pour la plupart mutable et non thread-safe, il est de la responsabilité de votre code de faire face aux problèmes de synchronisation.
+
+Considérons:
 
 ```
 public static Result index() {
@@ -115,67 +116,68 @@ public static Result index() {
 }
 ```
 
-In this code, chances are really high to hit a race condition if the 2 callbacks are run in the same time on 2 different threads, while accessing each to the share `result` HashMap. And the consequence will be probably some pseudo-deadlock in your application because of the implementation of the underlying Java HashMap.
+Dans ce code, les chances sont très élevés de recontrer une condition de concurrence lors de l'accès à la HashMap `result`, si les deux fonctions de rappels sont exécutés en même temps sur deux threads différents. Et la conséquence sera probablement un pseudo-interblocage dans votre application en raison de l'implémentation de la HashMap en Java. 
 
-To avoid any of these problems, we decided to manage the callback execution synchronization at the framework level. Play 2.1 will never run concurrently 2 callbacks for the same `Http.Context`. In this context, all callback execution will be run sequentially (while there is no guarantees that they will run on the same thread).
+Pour éviter un de ces problèmes, nous avons décidé de gérer la synchronisation de l'exécution de rappel au niveau du framework. Play 2.1 n'executera jamais simultanément deux fonctions de rappels pour le même `Http.Context`. Dans ce contexte, toutes les exécutions de fonction rappel sera exécutée séquentiellement (bien qu'il n'y ai aucune garantie qu'ils s'execute sur le même thread).
 
-## Managed Controller classes instantiation
+## Instantiation des classes de Controlleur
 
-By default Play binds URLs to controller methods statically, that is, no Controller instances are created by the framework and the appropriate static method is invoked depending on the given URL. In certain situations, however, you may want to manage controller creation and that’s when the new routing syntax comes handy.
+Par défaut Play lie les URLs aux méthodes statiques de contrôleur, auncune classes de contoleur ne sont créés par le framework, seule la méthode statique appropriée est appelée en fonction de l'URL donnée. Dans certains cas, cependant, vous voudrez peut-être gérer la création du contrôleur et c'est alors que la nouvelle syntaxe de routage est très utile. 
 
-Route definitions starting with @ will be managed by the `Global::getControllerInstance` method, so given the following route definition:
+Les définitions de Route commençant par @ seront gérés par la méthode `Global::getControllerInstance`, compte tenu de la définition de la route suivante:
 
 ```
 GET     /                  @controllers.Application.index()
 ```
 
-Play will invoke the `getControllerInstance` method which in return will provide an instance of `controllers.Application` (by default this is happening via the default constructor). Therefore, if you want to manage controller class instantiation either via a dependency injection framework or manually you can do so by overriding getControllerInstance in your application’s Global class.
+Play invoquera la méthode `getControllerInstance`, qui en retour fournira une instance `controllers.Application` (en appellant le constucteur par default). Par conséquent, si vous souhaitez gérer l'instanciation de classe de contrôleur soit par un framework de l'injection de dépendance soit manuellement, vous pouvez le faire en remplaçant GetControllerInstance dans classe Global de votre application.
 
-As this example [demonstrates it](https://github.com/guillaumebort/play20-spring-demo), it allows to wire any dependency injection framework such as __Spring__ into your Play application.
+Comme dans cet exemple [demonstrates it](https://github.com/guillaumebort/play20-spring-demo), qui permet d'utiliser n'importe quel frameword d'injection de dépendence comme __Spring__ dans votre application Play.
 
-## New Scala JSON API
+## Nouvelle API JSON pour Scala
 
-The new Scala JSON API provide great features such as transformation and validation of JSON tree. Check the new documentation at the [[Scala Json combinators document|ScalaJsonCombinators]].
+La nouvelle API JSON pour Scala fournie des super fonctionnalités comme des transformations et des validations de l'arbre JSON. Reportez vous à la nouvelle documentation [[Scala Json combinators document|ScalaJsonCombinators]].
 
-## New Filter API and CSRF protection
+## Nouvelle API de filtre et protection CSRF
 
-Play 2.1 provides a new and really powerful filter API allowing to intercept each part of the HTTP request or response, in a fully non-blocking way.
+Play 2.1 fournie une nouvelle et vraiment puissante API de filtre qui permet d'intercepter chaque partie d'une requête ou réponse HTTP, de manière non bloquante.
 
-For that, we introduced a new new simpler type replacing the old `Action[A]` type, called `EssentialAction` which is defined as:
+A cette fin, nous avons introduit un nouveau type plus simple pour remplacer l'ancient `Action[A]`, nommé `EssentialAction` qui est défini ainsi:
 
 ```
 RequestHeader => Iteratee[Array[Byte], Result]
 ```
 
-As a result, a filter is simply defined as: 
+Un filtre ce définit simplement part: 
 
 ```
 EssentialAction => EssentialAction
 ```
 
-> __Note__: The old `Action[A]` type is still available for compatibility.
+> __Note__: L'ancien type `Action[A]` est toujours disponible pour la compatibilité.
 
-The `filters` project that is part of the standard Play distribution contain a set of standard filter, such as the `CSRF` providing automatic token management against the CSRF security issue. 
+
+
+Le projet `filters` qui fait partie de la distribution Play standard, contient un ensemble de  filtre standard, tel que le `CSRF` qui fournit une gestion automatique de token pour lutter contre les problèmes de sécurité liés au CSRF. 
 
 ## RequireJS
 
-In play 2.0 the default behavior for Javascript was to use google closure's commonJS module support. In 2.1 this was changed to use [requireJS](http://requirejs.org/) instead.
+Dans Play 2.0 le comportement par défault pour Javascript était d'utiliser le module commonJS de Google closure. En 2.1 cela a changé en faveur de [requireJS](http://requirejs.org/).
 
-What this means in practice is that by default Play will only minify and combine files in stage, dist, start modes only. In dev mode Play will resolve dependencies client side.
+En practique, cela signifie que par défault, Play ne minifiera et combinera les fichiers seulement dans les modes stage, dist et start. Dans le mode dev, Play resoudre les dépendances coté client.
 
-If you wish to use this feature, you will need to add your modules to the settings block of your build file:
+Si vous voulez utiliser cette fonction, vous devez juste ajouter vos modules à la configuration:
 
 ```
 requireJs := "main.js"
 ```
+Plus de détails sur cette fonctionnalité peuvent être trouvés sur [[RequireJS documentation page|RequireJS-support]].
 
-More information about this feature can be found on the [[RequireJS documentation page|RequireJS-support]].
+## Négotiation du contentu
 
-## Content negotiation
+Le support pour la négociation du contenu a été amélioré, par exemple désormais les controleurs choisissent automatiquement la langue en fonction des paramètres du header `Accept-Language` de la requête.
 
-The support of content negotiation has been improved, for example now controllers automatically choose the most appropriate lang according to the quality values set in the `Accept-Language` request header value.
-
-It is also easier to write Web Services supporting several representations of a same resource and automatically choosing the best according to the `Accept` request header value:
+Il est également très simple d'écrire des Services Web qui supportent plusieurs représentation pour une même ressource et qui choisissent au mieux en fonction de la valeur de l'entête  `Accept` de la requête:
 
 ```
 val list = Action { implicit request =>
@@ -186,5 +188,4 @@ val list = Action { implicit request =>
   }
 }
 ```
-
-More information can be found on the content negotiation documentation pages for [[Scala|ScalaContentNegotiation]] and [[Java|JavaContentNegotiation]].
+Plus d'information peut être trouvé sur les pages de documentation sur la négociation de contenue pour  [[Scala|ScalaContentNegotiation]] and [[Java|JavaContentNegotiation]].
