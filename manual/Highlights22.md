@@ -9,7 +9,7 @@ Il a également créé une distinction artificielle entre actions asynchrone et 
 
 Ainsi nous avons simplifié la stucture de résultat pour Java et Scala. Il y a maintenant qu'un seul type de résultat, `SimpleResult`.  La super classes `Result` est toujours utilisée mais elle est marqué comme dépréciée.
 
-In Java applications, this means actions can now just return `Promise<SimpleResult>` if they wish to do asynchronous processing during a request, while Scala applications can use the `async` action builder, like this:
+Dans les applications Java, cela signifie que les actions doivent juste retourner `Promise<SimpleResult>` si elle veulent que leur traitement soit asynchrone, en Scala il faut utiliser le constructeur d'action `async`:
 
 ```scala
 def index = Action.async {
@@ -18,15 +18,15 @@ def index = Action.async {
 }
 ```
 
-## Better control over buffering and keep alive
+## Un meilleur controle du buffering et du keep alive
 
-How and when Play buffers results is now better expressed in the Scala API, [`SimpleResult`](api/scala/index.html#play.api.mvc.SimpleResult) has a new property called `connection`, which is of type [`HttpConnection`](api/scala/index.html#play.api.mvc.HttpConnection$).
+Comment et quand Plays bufferise les resulats est maintenant mieux exprimé dans l'API Scala, [`SimpleResult`](api/scala/index.html#play.api.mvc.SimpleResult) possède une nouvelle propriété nommée `connection`, qui est du type [`HttpConnection`](api/scala/index.html#play.api.mvc.HttpConnection$).
 
-If set to `Close`, the response will be closed once the body is sent, and no buffering will be attempted.  If set to `KeepAlive`, Play will make a best effort attempt to keep the connection alive, in accordance to the HTTP spec, buffering the response if only no transfer encoding or content length is specified.
+Si elle est positionée à `Close`, la réponse sera fermée des que le contenu sera envoyé, et aucun buffering ne sera effectif. Si elle est positionné à `KeepAlive`, Play fera de son mieux pour conserver la connexion, en accord avec la spécification HTTP, bufferisant la réponse seulement si l'encodage de transfert et la taille du contenue ne sont pas précisés.
 
-## New action composition and action builder methods
+## Nouvelle composition d'action et methodes de constructeur d'action
 
-We now provide an [`ActionBuilder`](api/scala/index.html#play.api.mvc.ActionBuilder) trait for Scala applications that allows more powerful building of action stacks.  For example:
+Nous fournissons désormais un trait [`ActionBuilder`](api/scala/index.html#play.api.mvc.ActionBuilder) pour les applications Scala qui permet des constructions plus puissantes de piles d'actions. Par exemple:
 
 ```scala
 object MyAction extends ActionBuilder[AuthenticatedRequest] {
@@ -37,13 +37,13 @@ object MyAction extends ActionBuilder[AuthenticatedRequest] {
     } getOrElse Future.successful(Forbidden)
   }
 
-  // Compose the action with a logging action, a CSRF checking action, and an action that only allows HTTPS
+  // Compose une action avec une logging action, une action qui gère le CSRF checking, et une action qui authorise seulement HTTPS
   def composeAction[A](action: Action[A]) =
     LoggingAction(CheckCSRF(OnlyHttpsAction(action)))
 }
 ```
 
-The resulting action builder can be used just like the built in `Action` object, with optional parser and request parameters, and async variants.  The type of the request parameter passed to the action will be the type specified by the builder, in the above case, `AuthenticatedRequest`:
+Le constucteur d'action résultant peut être utilisé comme l'objet `Action`, avec un analyseur optionnel et les paramètres de requête, et une variantes asynchrone. Le type du paramètre de la requête passé à l'action sera le type spécifié dans le constructeur, dans ce cas, `AuthenticatedRequest`:
 
 ```scala
 def save(id: String) MyAction(parse.formUrlEncoded) = { request =>
@@ -51,21 +51,21 @@ def save(id: String) MyAction(parse.formUrlEncoded) = { request =>
 }
 ```
 
-## Improved Java promise API
+## Une API de Promise Java améliorée
 
-The Java Promise class has been improved in order to bring its functionality closer to Scala's Future and Promise. In particular execution contexts can now be passed into a Promise's methods.
+La classe Java Promise a été améliorée afin d'approcher ses fonctionnalité des Futures et des Promises de Scala. En particulier, le contexte d'exécution peut maintenant être passé aux méthodes de Promise.
 
-## Iteratee library execution context passing
+## Contexte d'exécution et librairies Iteratee
 
-Execution contexts are now required when calling on methods of Iteratee, Enumeratee and Enumerator. Having execution contexts exposed for the Iteratee library provides finer-grained control over where execution occurs and can lead to performance improvements in some cases.
+Les contextes d'exécution sont maintenant nécessaires lors des appels aux méthodes d'Iteratee, Enumeratee et Enumerator. Exposer les contextes d'exécution pour les libraries d'Iteratee fournie un contrôle plus fin lors de l'exécution et peut conduire dans certains cas à un gain de performance.
 
-Execution contexts can be supplied implicitly which means that there is little impact on the code that uses Iteratees.
+Les contextes d'exécution peuvent être fournis implicitement, ce qui signifie qu'il y a peu d'impact sur le code existant qui utilise des Iteratees.
 
-## sbt 0.13 support
+## Support de sbt 0.13
 
-There have been various usability and performance improvements. 
+Il y a eu diverses améliorations d'utilisabilité et de performance.
 
-One usability improvement is that we now support `build.sbt` files for building Play projects e.g. `samples/java/helloworld/build.sbt`:
+Une amélioration d'utilisabilité est nous supportons désormais les fichiers `build.sbt` pour construire les projets Play. Par exemple `samples/java/helloworld/build.sbt`:
 
 ```scala
 import play.Project._
@@ -77,26 +77,26 @@ version := "1.0"
 playJavaSettings
 ```
 
-The `playJavaSettings` now declares all that is required for a Java project. Similarly `playScalaSettings` exists for Play Scala projects. Check out the sample projects for examples of this new build configuration. Note that the previous method of using build.scala along with `play.Project` is still supported.
+`playJavaSettings` déclare tout ce qui est nécessaire pour un projet Java. De même `playScalaSettings` existe pour les projets Play Scala. Consultez les exemples de projets pour des exemples de cette nouvelle configuration. Notez que la méthode précédente qui utilise build.scala avec play.Project` `est toujours supportée.
 
-For more information on what has changed for sbt 0.13 please refer to its [release notes](http://www.scala-sbt.org/0.13.0/docs/Community/ChangeSummary_0.13.0.html)
+Pour plus d'information sur ce qui a changé pour sbt 0.13 se référer aux [release notes](http://www.scala-sbt.org/0.13.0/docs/Community/ChangeSummary_0.13.0.html)
 
-## New stage and dist tasks
+## Les tâches stage et dist
 
-The _stage_ and _dist_ tasks have been completely overhauled in order to use the [Native Packager Plugin](https://github.com/sbt/sbt-native-packager).
+Les tâches _stage_ et _dist_ tasks ont été complètement remanié afin d'exploiter le [Native Packager Plugin](https://github.com/sbt/sbt-native-packager).
 
-The benefit in using the Native Packager is that many types of archive can now be supported in addition to regular zip files e.g. tar.gz, RPM, OS X disk images, Microsoft Installers (MSI) and more. In addition a Windows batch script is now provided for Play as well as a Unix one.
+L'interêt d'utiliser le packager natif réside dans le fait que plusieurs type d'archive sont maintenant supportés en plus des fichier zip,  tar.gz, RPM, OS X disk images, Microsoft Installers (MSI) et plus. De plus, un script batch pour Windows est maintenant fournie pour Play ainsi que pour Unix.
 
-More information can be found in the [[Creating a standalone version of your application|ProductionDist]] document.
+Plus d'information peut être trouver dans [[Creating a standalone version of your application|ProductionDist]].
 
-## Built in gzip support
+## Support pour gzip en standard
 
-Play now has built in support for gzipping all responses.  For information on how to enable this, see [[Configuring gzip encoding|GzipEncoding]].
+Play supporte maintenant la compression gzip pour toutes les requêtes. Pour savoir comment l'activer, voir [[Configuring gzip encoding|GzipEncoding]].
 
-## Documentation JAR
+## JAR de documentation 
 
-Play's distribution now stores its documentation in a JAR file rather than in a directory. A JAR file provides better support for tooling.
+La distribution de Play range désormais sa documentation dans un JAR plutôt que dans un répertoire. Les fichers JAR sont plus pratiques.
 
-Just like in Play 2.1, you can view the documentation when you [[run your Play application in development mode|PlayConsole]] by visiting the special [`/@documentation`](http://localhost:9000/@documentation) address.
+Comme dans Play 2.1, vous pouver consulter la documentation lorsque vous [[exécutez votre appication Play en mode dévelopment |PlayConsole]] en allant sur l'adresse speciale [`/@documentation`](http://localhost:9000/@documentation).
 
-If you want to access the raw files, they can now be found in the `play-docs` JAR file contained in the distribution.
+Si vous voulez accéder à la documentation sous forme de fichers, ils sont dans le JAR `play-docs` contenu dans la distribution.
