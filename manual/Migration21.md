@@ -1,56 +1,55 @@
 <!--- Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com> -->
-# Play 2.1 migration guide
+# Play 2.1 guide de migration
+  
+Ce guide concerne la migration vers Play 2.1 de Play 2.0.
 
-This guide is for migrating to Play 2.1 from Play 2.0.
-
-To migrate a **Play 2.0.x** application to **Play 2.1.0** first update Play's `sbt-plugin` in the `project/plugins.sbt` file:
+Pour migrer une application **Play 2.0.x** vers une **Play 2.1.0** commencez par mettre à jour `sbt-plugin` de Play dans le fichier `project/plugins.sbt`:
 
 ```
 addSbtPlugin("play" % "sbt-plugin" % "2.1.0")
 ```
 
-Now update the `project/Build.scala` file to use the new `play.Project` class instead of the `PlayProject` class:
+Maintenant mettez à jour le fichier `project/Build.scala` afin d'utiliser la nouvelle classe `play.Project` à la place de `PlayProject`:
 
-First the import:
+Commencer par les imports:
 
 ```
 import play.Project._
 ```
 
-Then the `main` project creation:
+Ensuite la création du `main` project:
 
 ```
 val main = play.Project(appName, appVersion, appDependencies).settings(
 ```
 
-Lastly, update your `project/build.properties` file:
+Enfin, mettez à jour le fichier `project/build.properties`:
 
 ```
 sbt.version=0.12.2
 ```
 
-Then clean and re-compile your project using the `play` command in the **Play 2.1.0** distribution:
+Ensuite clean et re-compiler votre projet en utilisant la commande `play` de la distribution **Play 2.1.0**:
 
 ```
 play clean
 play ~run
 ```
+Si vous rencontrez des erreurs de compilation, ce document vous aidera à comprendre ce qui a été déprécié ou les incompatibilités qui ont provoquer les erreurs.
 
-If any compilation errors cropped up, this document will help you figure out what deprecations or incompatible changes may have caused the errors.
+## Changement dans le fichier de build
 
-## Changes to the build file
+Du fait que Play 2.1 apporte plus de modularité, vous devez maintenant explicitement définir les dépendences nécessaire à votre application. Par defaut tout `play.Project` contiendra seulement une dépendence vers le cœur de la librairie Play.  Vous devez choisir l'ensemble de dépendences optionnelle dont votre projet à besoin. Voici les nouvelles dépendences modularisées dans **Play 2.1**:
 
-Because Play 2.1 introduces further modularization, you now have to explicitly specify the dependencies your application needs. By default any `play.Project` will only contain a dependency to the core Play library.  You have to select the exact set of optional dependencies your application need.  Here are the new modularized dependencies in **Play 2.1**:
+- `jdbc` : Le pool de connexion **JDBC** et l'API `play.api.db`.
+- `anorm` : Le composant **Anorm**.
+- `javaCore` : Le cœur de l'API **Java**.
+- `javaJdbc` : L'API base de donnée Java.
+- `javaEbean` : Le plugin Ebean pour Java.
+- `javaJpa` : Le plugin JPA pour Java.
+- `filters` : Un ensemble de filtre intégrés à Play (tels que le filtre CSRF).
 
-- `jdbc` : The **JDBC** connection pool and the the `play.api.db` API.
-- `anorm` : The **Anorm** component.
-- `javaCore` : The core **Java** API.
-- `javaJdbc` : The Java database API.
-- `javaEbean` : The Ebean plugin for Java.
-- `javaJpa` : The JPA plugin for Java.
-- `filters` : A set of build-in filters for Play (such as the CSRF filter).
-
-Here is a typical `Build.scala` file for **Play 2.1**:
+Voici un fichier `Build.scala` typique pour **Play 2.1**:
 
 ```
 import sbt._
@@ -73,25 +72,24 @@ object ApplicationBuild extends Build {
 }
 ```
 
-The `mainLang` parameter for the project is not required anymore. The main language is determined based on the dependencies added to the project. If dependencies contains `javaCore` then the language is set to `JAVA` otherwise `SCALA`.Notice the modularized dependencies in the `appDependencies` section. 
+Le paramètre `mainLang` pour le projet n'est plus nécessaire. Le language est déterminé à partir des dépendences du projet. Si les dépendences contiennent `javaCore` alors le language est `JAVA` sinon c'est `SCALA`. Remarquez la dépendences modulaire dans la section `appDependencies`. 
 
-## play.mvc.Controller.form() renamed to play.data.Form.form()
+## play.mvc.Controller.form() renommé en play.data.Form.form()
 
-Also related to modularization, the `play.data` package and its dependencies were moved out from play core to `javaCore` artifact. As a consequence of this, `play.mvc.Controller#form` was moved to `play.data.Form#form`
+En relation avec la modularisation, la package `play.data` et ses dépendences ont été déplacé du cœur de Play vers l'artéfact `javaCore`. En conséquence de cela, `play.mvc.Controller#form` a été renommé en `play.data.Form#form`
 
-## play.db.ebean.Model.Finder.join() renamed to fetch()
+## play.db.ebean.Model.Finder.join() renommé en fetch()
 
-As part of the cleanup the Finder API join methods are replaced with fetch methods. They behave exactly same.
+Dans le cadre du nettoyage de l'API Finder, les méthodes "join" ont été replacées par des méthodes "fetch". Leur comportement est inchangé.
 
-## Play's Promise to become Scala's Future
+## Le Promise de Play sont remplacées par les Future de Scala
+Avec l'introduction des `scala.concurrent.Future` de Scala 2.10 l'écosystem scala a fait un grand pas vers l'unification des différetes librairies de Futures et de Promises.
 
-With the introduction of `scala.concurrent.Future` in Scala 2.10 the scala ecosystem made a huge jump to unify the various Future and Promise libraries out there.
+Du fait que Play utilise `scala.concurrent.Future` on peut maintenant combiner les futures/promises qui viennent des APIs internes ou externes.
 
-The fact that Play is now using `scala.concurrent.Future` directly means that users can effortlessly combine futures/promises coming from both internal API-s or external libraries.
+> Les utilisateurs Java users continueront à utiliser le wrapper de Play autour des scala.concurrent.Future pour l'instant. 
 
-> Java users will continue to use a Play's wrapper around scala.concurrent.Future for now. 
-
-Consider the following snippet:
+Considerons le bout de code suivant:
 
 
 ```
@@ -112,7 +110,7 @@ def stream = Action {
   
 ```
 
-Using the new `scala.concurrent.Future` this will become:
+En utilisant la nouvelle `scala.concurrent.Future` cela devient:
 
 ```
 import play.api.libs.iteratee._
@@ -132,30 +130,30 @@ import scala.concurrent.duration._
   }
 ```
 
-Notice the extra imports for:
+Notez les nouveaux imports pour:
 
-- The new import for the execution context `play.api.libs.concurrent.Execution.Implicits`
-- The change for duration `scala.concurrent.duration` (instead of using the Akka API) 
-- The `asPromise` method has been removed
+- Nouvel import pour le contexte d'execution `play.api.libs.concurrent.Execution.Implicits`
+- Le changement pour les duration `scala.concurrent.duration` (au lieu de l'utilisation de l'API Akka).
+- La méthode `asPromise` a été enlevée.
 
-Generally speaking, if you see error message "error: could not find implicit value for parameter executor", you probably need to add:
+D'une manière générale, si vous voyez le message d'erreur: "error: could not find implicit value for parameter executor", vous devez surement ajouter:
 
 ```
 import play.api.libs.concurrent.Execution.Implicits._
 ```
 
-_(Please see the [Scala documentation about Execution context](http://docs.scala-lang.org/overviews/core/futures.html) for more information)_
+_(Voir la [documentation Scala  à propos du context d'Execution](http://docs.scala-lang.org/overviews/core/futures.html) pour plus d'information)_
 
-And remember that:
+Et souvenez vous que:
 
-- A Play `Promise` is now a Scala `Future`
-- A Play `Redeemable` is now a Scala `Promise`
+- Une `Promise` Play est maintenant une Future Scala
+- Un `Redeemable` Play est maintent une `Promise` Scala
 
-## Changes to the Scala JSON API
+## Changements de l'API JSON de Scala
 
-**Play 2.1** comes with a shiny new Scala JSON validator and path navigator. This new API however breaks compatibility with existing JSON parsers.
+**Play 2.1** vient avec une nouveau validateur de JSON Scala et un "path navigator". Ces nouvelles APIs case la compatibilité avec les parsers JSON actuels.
 
-The `play.api.libs.json.Reads` type signature has changed. Consider:
+La signature de `play.api.libs.json.Reads` a changé. Par exemple:
 
 ```
 trait play.api.libs.json.Reads[A] {
@@ -166,7 +164,7 @@ trait play.api.libs.json.Reads[A] {
 }
 ```
 
-In 2.1 this becomes:
+En 2.1 cela devient:
 
 ```
 trait play.api.libs.json.Reads[A] {
@@ -177,7 +175,7 @@ trait play.api.libs.json.Reads[A] {
 }
 ```
 
-So, in **Play 2.0** an implementation for a JSON serializer for the `User` type was:
+Ainso, dans **Play 2.0** une implementation d'un sérialiseur JSON serializer pour le type `User` était:
 
 ```
 implicit object UserFormat extends Format[User] {
@@ -198,7 +196,7 @@ implicit object UserFormat extends Format[User] {
 }
 ```
 
-In **Play 2.1** you will need to refactor it as: 
+Dans **Play 2.1** vous devrez changer le code comme il suit: 
 
 ```
 implicit object UserFormat extends Format[User] {
@@ -219,7 +217,7 @@ implicit object UserFormat extends Format[User] {
 }
 ```
 
-The API to generate JSON also evolved. Consider:
+L'API pour générer du JSON a également évolué:
 
 ```
 val jsonObject = Json.toJson(
@@ -244,7 +242,7 @@ val jsonObject = Json.toJson(
 )
 ```
 
-With **Play 2.1** this becomes:
+Avec **Play 2.1** cela devient:
 
 ```
 val jsonObject = Json.obj(
@@ -262,14 +260,13 @@ val jsonObject = Json.obj(
   )
 )
 ```
+Plus d'information au sujet de ces fonctionnalités peut être trouvé [[à la documentation JSON|ScalaJson]].
 
-More information about these features can be found [[at the Json documentation|ScalaJson]].
+## Changement de la gestion des Cookies
 
-## Changes to Cookie handling
+Suite à une changement dans _JBoss Netty_, les cookies sont marqués transient en affectant leur `maxAge` à `null` ou `None` (fonction de l'API) au lieu de mettre  `maxAge` à -1.  Toute valeur inférieure ou égale à 0 de `maxAge` fera expirer le cookie immediatement.
 
-Due to a change in _JBoss Netty_, cookies are made to be transient by setting their `maxAge` to be `null` or `None` (depending of the API) instead of setting the `maxAge` to -1.  Any value equal to 0 or less for `maxAge` will cause the cookie to be expired immediately.
-
-The `discardingCookies(String\*)` (Scala) and `discardCookies(String...)` (Java) methods on `SimpleResult` have been deprecated, since these methods are unable to handle cookies set on a particular path, domain or set to be secure.  Please use the `discardingCookies(DiscardingCookie*)` (Scala) and `discardCookie` (Java) methods instead.
+Les méthodes `discardingCookies(String\*)` (Scala) et `discardCookies(String...)` (Java) sur `SimpleResult` sont devenues obsolète, since these methods are unable to handle cookies set on a particular path, domain or set to be secure.  Please use the `discardingCookies(DiscardingCookie*)` (Scala) and `discardCookie` (Java) methods instead.
 
 ## RequireJS
 
