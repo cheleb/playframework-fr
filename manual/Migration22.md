@@ -1,43 +1,43 @@
 <!--- Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com> -->
-# Play 2.2 Migration Guide
+# Play 2.2 Guide de Migration 
 
-This guide is for migrating to Play 2.2 from Play 2.1.  To migrate to Play 2.1, first follow the [[Play 2.1 Migration Guide|Migration21]].
+Ce guide concerne la migration vers Play 2.2 de Play 2.1.  Pour migrer vers Play 2.1, commencez par le  [[Guide de Migration Play 2.1|Migration21]].
 
 ## Build tasks
 
-### Update the Play organization and version
+### Mise à jour de l'organisation de Playet de la version
 
-Play is now published under a different organisation id.  This is so that eventually we can deploy Play to Maven Central.  The old organisation id was `play`, the new one is `com.typesafe.play`.
+Play est désormais publié sous un id d'organisation différent.  Ainsi nous pourrons éventuellement déployer Play sur le Maven Central.  L'ancien id d'organisation était `play`, le nouveau est `com.typesafe.play`.
 
-The version also must be updated to 2.2.0.
+La version doit également être changée à 2.2.0.
 
-In `project/plugins.sbt`, update the Play plugin to use the new organisation id:
+Dans `project/plugins.sbt`, changez le plugin Play plugin afin d'utiliser le nouveau id d'organisation:
 
 ```scala
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
 ```
 
-In addition, if you have any other dependencies on Play artifacts, and you are not using the helpers to depend on them, you may have to update the organisation and version numbers there.
+De plus, si vous dépendez d'autres artefacts de Play, sans utiliser de Helper, vous devrez probablement corriger ces id d'organisation et ces versions.
 
-### Update SBT version
+### Mise à jour de la version de SBT
 
-`project/build.properties` is required to be updated to use sbt 0.13.0.
+`project/build.properties` doit être changé afin d'utiliser sbt 0.13.0.
 
-### Update root project
+### Mise à jour du projet root
 
-If you're using a multi-project build, and none of the projects has a root directory of the current directory, the root project is now determined by overriding rootProject instead of alphabetically:
+Si vous utilisez un build multi-project, et qu'aucun de ces projets ne possède de répertoire root sur le répertoire courant, maintenant le projet root est détérminé en surchargeant rootProject au lieu de l'ordre alphabétique:
 
 ```scala
 override def rootProject = Some(myProject) 
 ```
 
-### Update Scala version
+### Mise à jour de la version de Scala
 
-If you have set the scalaVersion (e.g. because you have a multi-project build that uses Project in addition to play.Project), you should update it to 2.10.2.
+Si vous avez positionné scalaVersion (e.g. parce que vous avez un build de multi-projet qui utilise Project en plus de play.Project), vous devriez le corriger en 2.10.2.
 
-### Play cache module
+### Module de cache de Play
 
-Play cache is now split out into its own module.  If you are using the Play cache, you will need to add this as a dependency.  For example, in `Build.scala`:
+Le cache de Play est maintenant séparé dans son propre module. Si vous utilisez le cache de Play, vous devrez cette l'ajouter comme dépendence. Par exemple, dans `Build.scala`:
 
 ```scala
 val addDependencies = Seq(
@@ -47,20 +47,19 @@ val addDependencies = Seq(
 )
 ```
 
-Note that if you depend on plugins that depend on versions of Play prior to 2.2 then there will be a conflict within caching due to multiple caches being loaded. Update to a later plugin version or ensure that older Play versions are excluded if you see this issue.
+Notez que si vous dépendez de plugins qui dependent d'une version de Play antérieure a 2.2, vous obtiendrez des conflits car plusieurs cache seront chargés. Mettez à jour la version de ces plugins ou assurez vous que les vieilles de Play sont exclues si vous rencontrait ce problème.
 
-### sbt namespace no longer extended
+### L'espace de nom de sbt n'est plus étendu
 
-The `sbt` namespace was previously extended by Play e.g. `sbt.PlayCommands.intellijCommandSettings`. This is considered bad practice and so
-Play now uses its own namespace for sbt related things e.g. `play.PlayProject.intellijCommandSettings`.
+L'espace de nom de `sbt` était étendu par Play e.g. `sbt.PlayCommands.intellijCommandSettings`. Ceci est considéré comme une mauvaise pratique et en conséquence Play utilise desormais son propre espace de nom pour les éléments en relation avec sbt:  `play.PlayProject.intellijCommandSettings`.
 
-## New results structure in Scala
+## Nouvelles structure de resultats en Scala
 
-In order to simplify action composition and filtering, the Play results structure has been simplified.  There is now only one type of result, `SimpleResult`, where before there were `SimpleResult`, `ChunkedResult` and `AsyncResult`, plus the interfaces `Result` and `PlainResult`.  All except `SimpleResult` have been deprecated.  `Status`, a subclass of `SimpleResult`, still exists as a convenience class for building results.  In most cases, actions can still use the deprecated types, but they will get deprecation warnings.  Actions doing composition and filters however will have to switch to using `SimpleResult`.
+Afin de simplifier la composition et le filtrage des actions, les structures de resultats ont été simplifiées. Il n'y a maintenant plus qu'un type de resultat, `SimpleResult`, là où avant il y avait  `SimpleResult`, `ChunkedResult` et `AsyncResult`, plus les interfaces `Result` and `PlainResult`.  Tous à l'exeption de `SimpleResult` ont été marquées obsolètes.  `Status`, une sous classes de `SimpleResult`, existe toujours comme une classes de confort pour construire les resultats.  Dans la plupart des cas, les actions peuvent toujours utiliser les types obsolètes, mais cela génèrerera les deprecation warnings.  Les actions qui composent ou filtre devront utiliser `SimpleResult`.
 
-### Async actions
+### Action Async
 
-Previously, where you might have the following code:
+Avant, là où vous aviez le code suivant:
 
 ```scala
 def asyncAction = Action {
@@ -70,7 +69,7 @@ def asyncAction = Action {
 }
 ```
 
-You can now use the [`Action.async`](api/scala/index.html#play.api.mvc.ActionBuilder) builder:
+Vous pouvez maintenant utiliser le constructeur [`Action.async`](api/scala/index.html#play.api.mvc.ActionBuilder):
 
 ```scala
 def asyncAction = Action.async {
@@ -78,9 +77,9 @@ def asyncAction = Action.async {
 }
 ```
 
-### Working with chunked results
+### Travailler avec des resultats fragmentés
 
-Previously the `stream` method on `Status` was used to produce chunked results.  This has been deprecated, replaced with a [`chunked`](api/scala/index.html#play.api.mvc.Results$Status) method, that makes it clear that the result is going to be chunked.  For example:
+Avant, la méthode `stream` de `Status` était utilisé afin de produire des résultats fragmentés.  Ceci est devenu obsolète, remplacé par la méthode  [`chunked`](api/scala/index.html#play.api.mvc.Results$Status), qui est plus explicite sur le fait que le résultats sera fragmenté.  Par exemple:
 
 ```scala
 def cometAction = Action {
@@ -88,33 +87,33 @@ def cometAction = Action {
 }
 ```
 
-Advanced uses that created or used `ChunkedResult` directly should be replaced with code that manually sets/checks the `TransferEncoding: chunked` header, and uses the new `Results.chunk` and `Results.dechunk` enumeratees.
+Les utilisations avancées qui créait ou utilisait `ChunkedResult` directement doivent être changées avec un code qui définit/vérifie manuellement les entêtes `TransferEncoding: chunked`, et utilise le nouveau `Results.chunk` ainsi que les enumeratees `Results.dechunk`.
 
-### Action composition
+### Composition d'action 
 
-We are now recommending that action composition be done using [`ActionBuilder`](api/scala/index.html#play.api.mvc.ActionBuilder) implementations for building actions.
+Nous recommandons que la composition d'action soit faite en utilisant l'implémention [`ActionBuilder`](api/scala/index.html#play.api.mvc.ActionBuilder) pour créer les actions.
 
-Details on how to do these can be found [[here|ScalaActionsComposition]].
+Des détails sur comment faire cela peuvent être trouvés [[là|ScalaActionsComposition]].
 
-### Filters
+### Filtres
 
-The iteratee produced by `EssentialAction` now produces `SimpleResult` instead of `Result`.  This means filters that needed to work with the result no longer have to unwrap `AsyncResult` into a `PlainResult`, arguably making all filters much simpler and easier to write.  Code that previously did the unwrapping can generally be replaced with a single iteratee `map` call.
+Les iteratees produits par `EssentialAction` produisent désormais des  `SimpleResult` au lieu de `Result`.  Ce qui signifie que les filtres qui doivent fonctionner le resultat non plus à déballer `AsyncResult` en un `PlainResult`, ce qui sans aucun doute rend les filtres beaucoup plus simple et plus facile à écrire. Le code qui auparavant déballait peut en général être remplacé par un unique appel `map` de iteratee.
 
-### play.api.http.Writeable application
+### Application play.api.http.Writeable 
 
-Previously the constructor to `SimpleResult` took a `Writeable` for the type of the `Enumerator` passed to it.  Now that enumerator must be an `Array[Byte]`, and `Writeable` is only used for the `Status` convenience methods.
+Auparavant le constucteur de `SimpleResult` prenait un `Writeable` pour le type de l'`Enumerator` passé en paramètre.  Maintenant l'enumerator doit être un `Array[Byte]`, et `Writeable` est seulement utilisé par les méthodes pratiques de `Status`.
 
 ### Tests
 
-Previously `Helpers.route()` and similar methods returned a `Result`, which would always be an `AsyncResult`, and other methods on `Helpers` such as `status`, `header` and `contentAsString` took `Result` as a parameter.  Now `Future[SimpleResult]` is returned by `Helpers.route()`, and accepted by the extraction methods.  For many common use cases, where type inference is used to determine the types, no changes should be necessary to test code.
+Avant `Helpers.route()` et les méthodes similaire returnaient un `Result`, qui était toujours un `AsyncResult`, les autres méthodes sur `Helpers` telles que `status`, `header` et `contentAsString` prenaient `Result` comme paramètre.  Maintenant un `Future[SimpleResult]` est retourné par `Helpers.route()`, et accepté par les méthodes d'extraction.  En général, lorque l'inference de type est utilisé,  aucun changement doit être nécessaire pour le code de test.
 
-## New results structure in Java
+## Nouvelle structure de résultats en Java
 
-In order to simply action composition, the Java structure of results has been changed.  `AsyncResult` has been deprecated, and `SimpleResult` has been introduced, to distinguish normal results from the `AsyncResult` type.
+Afin de simplifier la composition d'action, la structute Java des résultats a été changée. `AsyncResult` est devenue obsolète, et `SimpleResult` a été introduit, afin de distinguer les résultats normaux des `AsyncResult`.
 
-### Async actions
+### Actions Async
 
-Previously, futures in async actions had to be wrapped in the `async` call.  Now actions may return either `Result` or `Promise<Result>`.  For example:
+Avant, les futures dans les action asycn étaient enveloppées dans un appel `async`. Maintenant, les actions peuvent retourner soit un `Result` soit une `Promise<Result>`.  Par exemple:
 
 ```java
 public static Promise<Result> myAsyncAction() {
@@ -135,13 +134,13 @@ public static Promise<Result> myAsyncAction() {
 }
 ```
 
-### Action composition
+### Composition d'action
 
-The signature of the `call` method in `play.mvc.Action` has changed to now return `Promise<SimpleResult>`.  If nothing is done with the result, then typically the only change necessary will be to update the type signatures.
+La signature de la méthode `call` dans `play.mvc.Action` a changé afin de  retourner une `Promise<SimpleResult>`.  Si rien n'est fait avec le résutat, alors il siffira juste de changer la signature de la méthode.
 
-## Iteratees execution contexts
+## Contexte d'exécution des Iteratees
 
-Iteratees, enumeratees and enumerators that execute application supplied code now require an implicit execution context.  For example:
+Iteratees, enumeratees and enumerators qui exécute le code fourni par l'application on maintenant besoin d'un contexte d'exécution implicit. Par exemple:
 
 ```scala
 import play.api.libs.concurrent.Execution.Implicits._
@@ -151,17 +150,17 @@ Iteratee.foreach[String] { msg =>
 }
 ```
 
-## Concurrent F.Promise execution
+## Exécution concurrente de F.Promise
 
-The way that the [`F.Promise`](api/java/play/libs/F.Promise.html) class executes user-supplied code has changed in Play 2.2.
+Le moyen par lequel la classe [`F.Promise`](api/java/play/libs/F.Promise.html)  exécute le code fournit par l'utilisateur a changé en Play 2.2.
 
-In Play 2.1, the `F.Promise` class restricted how user code was executed. Promise operations for a given HTTP request would execute in the order that they were submitted, essentially running sequentially.
+Dans Play 2.1, la classe `F.Promise` restreignait la manière dont le code était exécuté. Les opérations promises pour une requête HTTP s'exécutaientdans l'ordre ou, en séquence.
 
-With Play 2.2, this restriction on ordering has been removed so that promise operations can execute concurrently. Work executed by the `F.Promise` class now uses [[Play's default thread pool|ThreadPools]] without placing any additional restrictions on execution.
+Avec Play 2.2, cette restriction sur l'ordre a disparue de telle manière que  les opéarations promises peuvent s'exécuter en concurrence. Le travail exécuté par la classe `F.Promise` utilise [[le pool de thread par default de Play|ThreadPools]] sans apporter plus de restrictions sur l'exécution.
 
-However, for those who still want it, Play 2.1's legacy behavior has been captured in the `OrderedExecutionContext` class. The legacy behavior of Play 2.1 can be easily recreated by supplying an `OrderedExecutionContext` as an argument to any of `F.Promise`'s methods.
+Cependant, pour ceux qui le désire toujours, le comportement historique de Play 2.1's est conservé dans la classe `OrderedExecutionContext`. Ce comportement historique de Play 2.1 peut facilement être restauré en fournissant un `OrderedExecutionContext` comme argument à n'importe quelles des méthodes de `F.Promise`'.
 
-The following code shows how to recreate Play 2.1's behaviour in Play 2.2. Note that this example uses the same settings as Play 2.1: a pool of 64 actors running within Play's default `ActorSystem`.
+Le code suivant illustre comment restaurer le comportement de Play 2.1 dans Play 2.2. Remarquez que cet exemple utilise les mêmes paramètres que Play 2.1: un pool de 64 acteurs s'exécutant au sein de l'`ActorSystem` par default  de Play.
 
 ````java
 import play.core.j.OrderedExecutionContext;
@@ -183,20 +182,20 @@ Promise<Double> mappedPi = pi.map(new Function<Double, Double>() {
 ````
 
 ## Jackson Json
-We have upgraded Jackson to version 2 which means that the package name is now `com.fasterxml.jackson.core` instead of `org.codehaus.jackson`.
+Nous avons mis à jour Jackson à la version 2 ceux qui signifie que l'espace de est maintenant `com.fasterxml.jackson.core` au lieu de `org.codehaus.jackson`.
 
-## Preparing a distribution
+## Préparer une distribution
 
-The _stage_ and _dist_ tasks have been completely re-written in Play 2.2 so that they use the [Native Packager Plugin](https://github.com/sbt/sbt-native-packager). 
+Les tâches _stage_ et _dist_ ont été complètement ré-écrite en Play 2.2 de telle manière qu'elles utilise le [Native Packager Plugin](https://github.com/sbt/sbt-native-packager). 
 
-Play distributions are no longer created in the project's `dist` folder. Instead, they are created in the project's `target` folder. 
+Les distributions de Play distributions ne sont plus créées dans le répertoire `dist` du projet. A la place, ils sont créés dans le répertoire `target` du projet. 
 
-Another thing that has changed is the location of the Unix script that starts a Play application. Prior to 2.2 the Unix script was named `start` and it resided in the root level folder of the distribution. With 2.2 the `start` script is named as per the project's name and it resides in the distribution's `bin` folder. In addition there is now a `.bat` script available to start the Play application on Windows.
+Une autre chose qui a changé, c'est la place du script Unix qui démarre un application Play. Antérieurement à la 2.2 le script Unix était nommé `start` et résidait dans le répertoire racine de la distribution. Avec la 2.2, le script `start` est renommé avec le nom du projet et réside dans le répertoire  `bin` de la distribution. De plus, il y a un script `.bat` disponible pour démarrer l'application Play sous Windows.
 
-> Please note that the format of the arguments passed to the `start` script has changed. Please issue a `-h` on the `start` script to see the arguments now accepted.
+> Remarquez que le format des arguments passés au script `start` script on changés. Donnez un `-h` au script `start` pour voir les argument attendus.
 
-Please consult the [["Starting your application in production mode"|Production]] documentation for more information on the new `stage` and `dist` tasks.
+Consultez la documentation [["démarrer votre application en mode production"|Production]] pour plus d'information sur les nouvelles tâches `stage` et `dist`.
 
-## Upgrade from Akka 2.1 to 2.2
+## Mise à jour de Akka 2.1 vers 2.2
 
-The migration guide for upgrading from Akka 2.1 to 2.2 can be found [here](http://doc.akka.io/docs/akka/2.2.0/project/migration-guide-2.1.x-2.2.x.html).
+Le guide de migration pour la mise à jour de Akka 2.1 vers 2.2 se trouve [là](http://doc.akka.io/docs/akka/2.2.0/project/migration-guide-2.1.x-2.2.x.html).

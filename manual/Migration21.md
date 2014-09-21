@@ -29,7 +29,7 @@ Enfin, mettez à jour le fichier `project/build.properties`:
 sbt.version=0.12.2
 ```
 
-Ensuite clean et re-compiler votre projet en utilisant la commande `play` de la distribution **Play 2.1.0**:
+Ensuite nettoyez et re-compilez votre projet en utilisant la commande `play` de la distribution **Play 2.1.0**:
 
 ```
 play clean
@@ -266,18 +266,17 @@ Plus d'information au sujet de ces fonctionnalités peut être trouvé [[à la d
 
 Suite à une changement dans _JBoss Netty_, les cookies sont marqués transient en affectant leur `maxAge` à `null` ou `None` (fonction de l'API) au lieu de mettre  `maxAge` à -1.  Toute valeur inférieure ou égale à 0 de `maxAge` fera expirer le cookie immediatement.
 
-Les méthodes `discardingCookies(String\*)` (Scala) et `discardCookies(String...)` (Java) sur `SimpleResult` sont devenues obsolète, since these methods are unable to handle cookies set on a particular path, domain or set to be secure.  Please use the `discardingCookies(DiscardingCookie*)` (Scala) and `discardCookie` (Java) methods instead.
+Les méthodes `discardingCookies(String\*)` (Scala) et `discardCookies(String...)` (Java) sur `SimpleResult` sont devenues obsolète, depuis que ces méthodes ne sont pas capable de gérer les cookies avec un path ou marqués sécurisés. Utilisez maintenant la méthode `discardingCookies(DiscardingCookie*)` (Scala) et `discardCookie` (Java).
 
 ## RequireJS
 
-In **Play 2.0** the default behavior for Javascript was to use Google's Closure CommonJS module support. In **Play 2.1** this was changed to use RequireJS instead.
+Dans **Play 2.0** le comportement par défault pour le Javascript était d'utiliser le support du module CommonJS de Closure Google. Dans **Play 2.1**  cela a changé avec l'utilisation de RequireJS.
 
-What this means in practice is that by default Play will only minify and combine files in stage, dist, start modes only. In dev mode Play will resolve dependencies client side.
+Ce qui signifie en pratique que par défault Play ne minifiera et ne combinera les fichiers que dans les modes stage, dist et start. En mode dev Play resoudra les dependences coté client.
 
-If you wish to use this feature, you will need to add your modules to the settings block of your `project/Build.scala` file:
+Si vous souhaitez utiliser cette fonctionnalité, vous devrez ajoutez vos modules au block de configuration de votre fichier:
 
 ```
 requireJs := "main.js"
 ```
-
-More information about this feature can be found on the [[RequireJS documentation page|RequireJS-support]].
+Plus d'information au sujet de cette fonctionnalité peut être trouvée sur la [[page de documention de RequireJS|RequireJS-support]].
