@@ -1,57 +1,57 @@
 <!--- Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com> -->
-# Play 2.3 Migration Guide
+# Play 2.3 Guide de Migration
 
-This guide is for migrating to Play 2.3 from Play 2.2. To migrate to Play 2.2, first follow the [[Play 2.2 Migration Guide|Migration22]].
+Ce guide concerne la migration vers Play 2.3 de Play 2.2. Pour migrer vers Play 2.2, commencez par suivre le [[Guide de Migration Play 2.2|Migration22]].
 
 ## Activator
 
-In Play 2.3 the `play` command has become the `activator` command. Play has been updated to use [Activator](https://typesafe.com/activator).
+Dans Play 2.3 la commande `play` est remplacée par `activator`. Play a évolué afin d'utiliser [Activator](https://typesafe.com/activator).
 
-### Activator command
+### La commande Activator
 
-All the features that were available with the `play` command are still available with the `activator` command.
+Toutes les fonctionnalités qui étaient disponible avec la commande `play` le sont également avec la commande `activator`.
 
-* `activator new` to create a new project. See [[Creating a new application|NewApplication]].
-* `activator` to run the console. See [[Using the Play console|PlayConsole]].
-* `activator ui` is a new command that launches a web user interface.
+* `activator new` pour créer un nouveau projet. Voir [[Créer une nouvelle application|NewApplication]].
+* `activator` pour lancer la console. Voir [[Utiliser la console de Play|PlayConsole]].
+* `activator ui` est une nouvelle commande qui lance un interface web..
 
-> The new `activator` command and the old `play` command are both wrappers around [sbt](http://www.scala-sbt.org/). If you prefer, you can use the `sbt` command directly. However, if you use sbt you will miss out on several Activator features, such as templates (`activator new`) and the web user interface (`activator ui`). Both sbt and Activator support all the usual console commands such as `test` and `run`.
+> La nouvelle commande `activator` et l'ancienne commande `play`sont toutes deux des enveloppes autour de [sbt](http://www.scala-sbt.org/). Si vous préférez, vous pouvez utilisez la commande `sbt` directement. Cependant, en utilisant sbt directement vous passerez à coté de quelques fonctionnalités apportées par Activator, telles que les templates (`activator new`) et l'interface utilisateur web (`activator ui`). Tant sbt que Activator supportent tout les commandes classiques de console telles que `test` et `run`.
 
 ### Activator distribution
 
-Play is distributed as an Activator distribution that contains all Play's dependencies. You can download this distribution from the [Play download](http://www.playframework.com/download) page.
+Play est distribué comme une distribution d'Activator qui contient toutes les dépendences de Play. Vous pouvez télécharger cette distribution à partir de la page [Play download](http://www.playframework.com/download).
 
-If you prefer, you can also download a minimal (1MB) version of Activator from the [Activator site](https://typesafe.com/activator). Look for the "mini" distribution on the download page. The minimal version of Activator will only download dependencies when they're needed.
+Si vous préférez, vous pouvez également télécharger une version minimale (1MB) d'Activator à partir du [site Activator](https://typesafe.com/activator). Cherchez la "mini" distribution sur la page de téléchargement. La version minimale d'Activator téléchargera seulement les dépendences lorsqu'elle seront nécessaires.
 
-Since Activator is a wrapper around sbt, you can also download and use [sbt](http://www.scala-sbt.org/) directly, if you prefer.
+Comme Activator est un wrapper autour de sbt, vous pouvez également télécharger et utiliser [sbt](http://www.scala-sbt.org/) directly, si vous préférez.
 
-## Build changes
+## Changement du Build
 
 ### sbt
 
-Play uses sbt 0.13.5. If you're updating an existing project, change your `project/build.properties` file to:
+Play utilise sbt 0.13.5. Si vous mettez à jour un projet existant, changez votre fichier `project/build.properties` en:
 
 ```
 sbt.version=0.13.5
 ```
 
-### Plugin changes
+### Changement du Plugin
 
-Change the version of the Play plugin in `project/plugins.sbt`:
+Changez la version du plugin de Play dans `project/plugins.sbt`:
 
 ```scala
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.XXX")
 ```
 
-Where `2.3.XXX` is the version of Play you want to use.
+Où `2.3.XXX` est la version de Play que vous voulez utiliser.
 
-You will also need to add some sbt-web plugins, see the *sbt-web* section below.
+Vous devrez également ajouter quelques plugins de sbt-web, voir la section *sbt-web* en dessous.
 
-### Auto Plugins and plugin settings
+### Auto Plugins et plugin settings
 
-sbt 0.13.5 brings a new feature named "auto plugins".
+sbt 0.13.5 apporte une nouvelle fonctionnalité appelée "auto plugins".
 
-Auto plugins permit sbt plugins to be declared in the `project` folder (typically the `plugins.sbt`) as before. What has changed though is that plugins may now declare their requirements of other plugins and what triggers their enablement for a given build. Before auto plugins, plugins added to the build were always available; now plugins are enabled selectively for given modules.
+Auto plugins permet au plugins sbt d'être déclarés dans le répertoire  `project`  (typiquement le `plugins.sbt`) comme avant. Ce qui a changé, What has changed though is that plugins may now declare their requirements of other plugins and what triggers their enablement for a given build. Before auto plugins, plugins added to the build were always available; now plugins are enabled selectively for given modules.
 
 What this means for you is that declaring `addSbtPlugin` may not be sufficient for plugins that now utilize to the auto plugin functionality. This is a good thing. You may now be selective as to which modules of your project should have which plugins e.g.:
 
