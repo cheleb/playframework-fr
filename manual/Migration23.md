@@ -51,29 +51,28 @@ Vous devrez également ajouter quelques plugins de sbt-web, voir la section *sbt
 
 sbt 0.13.5 apporte une nouvelle fonctionnalité appelée "auto plugins".
 
-Auto plugins permet au plugins sbt d'être déclarés dans le répertoire  `project`  (typiquement le `plugins.sbt`) comme avant. Ce qui a changé, What has changed though is that plugins may now declare their requirements of other plugins and what triggers their enablement for a given build. Before auto plugins, plugins added to the build were always available; now plugins are enabled selectively for given modules.
+Auto plugins permet aux plugins sbt d'être déclarés dans le répertoire  `project`  (typiquement le `plugins.sbt`) comme avant. Ce qui a changé c'est que les plugins peuvent maintenant déclarer leurs dépendences envers d'autre plugins et ce qui déclenche leur activation pour un build donné. Avant auto plugins, les plugins ajoutés au build étaient toujours activés; maintenant les plugins sont activés sélectivement pour chaque modules.
 
-What this means for you is that declaring `addSbtPlugin` may not be sufficient for plugins that now utilize to the auto plugin functionality. This is a good thing. You may now be selective as to which modules of your project should have which plugins e.g.:
+Ce qui signifie que déclarer `addSbtPlugin` peut ne pas suffire pour des plugins qui utililisent "auto plugin". C'est une bonne chose. Vous pouvez maintenant choisir quels modules utilisent quels plugins, par ex:
 
 ```scala
 lazy val root = (project in file(".")).enablePlugins(SbtWeb)
 ```
+L'exemple ci dessus montre `SbtWeb` être ajouté au projet racine d'un build. Dans le cas de `SbtWeb`il y d'autres plugins qui vont s'activer, par exemple, si vous avez également ajouté `sbt-less-plugin` via `addSbtPlugin`, à ce moment il sera activé du fait que `SbtWeb` ait été  activé. `SbtWeb` est donc un plugin "racine" pour cette catégorie de plugin.
 
-The above example shows `SbtWeb` being added to the root project of a build. In the case of `SbtWeb` there are other plugins that become enabled if it is e.g. if you also had added the `sbt-less-plugin` via `addSbtPlugin` then it will become enabled just because `SbtWeb` has been enabled. `SbtWeb` is thus a "root" plugin for that category of plugins.
-
-Play itself is now added using the auto plugin mechanism. The mechanism used in Play 2.2 where `playJavaSettings` and `playScalaSettings` were used has been removed. You now use one of the following instead:
+Play lui même utilise désormais le mécanisme d'auto plugins. Le mécanisme de Play 2.2 où `playJavaSettings` et `playScalaSettings` était utilisés a été enlevé. Maintenant vous devez utilisé à la place: 
 
 ```java
 lazy val root = (project in file(".")).enablePlugins(PlayJava)
 ```
 
-or
+ou
 
 ```scala
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 ```
 
-If you were previously using play.Project, for example a Scala project:
+Si auparavant vous utilisiez play.Project, par exemple un projet Scala:
 
 ```scala
 object ApplicationBuild extends Build {
@@ -89,7 +88,7 @@ object ApplicationBuild extends Build {
 }
 ```
 
-...then you can continue to use a similar approach via native sbt:
+...alors vous pouvez continuer d'utiliser une approche similaire via sbt native:
 
 ```scala
 object ApplicationBuild extends Build {
@@ -106,18 +105,17 @@ object ApplicationBuild extends Build {
 
 }
 ```
+En procédant de la sorte les settings sont maintenant automatiquement importés lorsqu'un plugin est activé.
 
-By moving to the above style settings are now automatically imported when a plugin is enabled.
-
-The keys provided by Play must now also be referenced within the `PlayKeys` object. For example to reference `playVersion` you must do so either by importing:
+Les clefs (keys) fournies par Play doivent maintenant être référencées au seins de l'objet `PlayKeys`. Par exemple pour to référencer `playVersion` vous devez soit importer les clefs:
 
 ```scala
 import PlayKeys._
 ```
 
-or qualifying it with `PlayKeys.playVersion`.
+soit les qualifier complètement avec `PlayKeys.playVersion`.
 
-Outside of using a `.sbt` file i.e. if you're using Scala to describe your build then you may do the following to have `PlayKeys` within scope:
+En dehors des fichier `.sbt`, si vous utilisez Scala pour décrire vos build alors vous devrez écrire ces lignes afin d'avoir les `PlayKeys` disponibles:
 
 ```scala
 import play.Play.autoImport._
@@ -126,17 +124,17 @@ import PlayKeys._
 
 ### Explicit scalaVersion
 
-Play 2.3 supports both Scala 2.11 and Scala 2.10. The Play plugin previously set the `scalaVersion` sbt setting for you. Now you should indicate which version of Scala you wish to use.
+Play 2.3 supporte à la fois Scala 2.11 et Scala 2.10. Avant le plugin Play positionnait le setting sbt `scalaVersion` pour vous. Désormais vous devez indiquer quelle version de Scala vous voulez utiliser.
 
-Update your `build.sbt` or `Build.scala` to include the Scala version:
+Mettez à jour votre `build.sbt` ou `Build.scala` en incluant la version de Scala:
 
-For Scala 2.11:
+Pourr Scala 2.11:
 
 ```scala
 scalaVersion := "2.11.1"
 ```
 
-For Scala 2.10:
+Pour Scala 2.10:
 
 ```scala
 scalaVersion := "2.10.4"
@@ -144,36 +142,35 @@ scalaVersion := "2.10.4"
 
 ### sbt-web
 
-The largest new feature for Play 2.3 is the introduction of [sbt-web](https://github.com/sbt/sbt-web#sbt-web). In summary sbt-web allows Html, CSS and JavaScript functionality to be factored out of Play's core into a family of pure sbt plugins. There are two major advantages to you:
+La grande nouveauté de Play 2.3 est l'introduction de [sbt-web](https://github.com/sbt/sbt-web#sbt-web). En résumé sbt-web permet aux fonctionnalités  Html, CSS and JavaScript d'être extraite du cœur de Play en une ensemble de plugins sbt purs. Cela a deux avantages majeur pour vous:
 
-* Play is less opinionated on the Html, CSS and JavaScript; and
-* sbt-web can have its own community and thrive in parallel to Play's.
+* Play est moins dogmatique sur le HTML, CSS et JavaScript; et
+* sbt-web peut avoir sa propre communauté and prospérer parallèlement à Play.
 
-There are other advantages including the fact that sbt-web plugins are able to run within the JVM via [Trireme](https://github.com/apigee/trireme#trireme), or natively using [Node.js](http://nodejs.org/). Note that sbt-web is a development environment and does not participate in the execution of a Play application. Trireme is used by default, but if you have Node.js installed and want blistering performance for your builds then you can provide a system property via sbt's SBT_OPTS environment variable. For example:
+Il y a d'autres avantages, notamment le fait que les plugins SBT-Web sont en mesure de fonctionner au sein de la JVM via [Trireme](https://github.com/apigee/trireme#trireme), ou nativement en utilisant [Node.js](http://nodejs.org/). Notez que sbt-web est un environement de développement et ne participe pas à l'exécution d'une application Play. Trireme est utilisé par défault, mais si vous avez Node.js installé et voulez et voulez avoir des performance fulgurante pour votre build alors vous pouvez fournir une propriété système via la variable d'environnement sbt SBT_OPTS. Par exemple:
 
 ```bash
 export SBT_OPTS="$SBT_OPTS -Dsbt.jse.engineType=Node"
 ```
 
-A feature of sbt-web is that it is not concerned whether you use "javascripts" or "stylesheets" as your folder names. Any files with the appropriate filename extensions are filtered from within the `app/assets` folder.
+Une caractéristique de sbt-web est qu'il s'intéresse pas au fait que vous utilisiez "javascripts" ou "stylesheets" comme nom de dossier. Tout fichier avec l'extension approprié sera filtré dans le dossier `app/assets`.
 
-A nuance with sbt-web is that *all* assets are served from the `public` folder. Therefore if you previously had assets reside outside of the `public` folder i.e. you used the `playAssetsDirectories` setting as per the following example:
+Une nuance avec SBT-web est que *toutes* les ressources sont servies à partir du dossier `public`. Par conséquent, si vous aviez précédemment des ressources à l'extérieur du dossier `public` c'est-à-dire que vous avez utilisé le paramètre` playAssetsDirectories` comme dans l'exemple suivant:
 
 ```scala
 playAssetsDirectories <+= baseDirectory / "foo"
 ```
 
-...then you should now use the following:
+...alors vous devez maintenant faire la chose suivante:
 
 ```scala
 unmanagedResourceDirectories in Assets += baseDirectory.value / "foo"
 ```
+...cependant notez que les fichiers y seront regroupées dans le dossier public. Cela signifie qu'un fichier  "public / a.js" sera remplacé par le fichier "foo / a.js". Vous pouvez également utiliser des sous-dossiers dans votre dossier public comme espace de noms.
 
-...however note that the files there will be aggregated into the target public folder. This means that a file at "public/a.js" will be overwritten with the file at "foo/a.js". Alternatively use sub folders off your project's public folder in order to namespace them.
+La suite liste tout les composants relatifs à sbt-web ainsi que leurs versions au moment de la la release Play 2.3.
 
-The following lists all sbt-web related components and their versions at the time of releasing Play 2.3.
-
-#### Libraries
+#### Librairies
 ```scala
 "com.typesafe" %% "webdriver" % "1.0.0"
 "com.typesafe" %% "jse" % "1.0.0"
@@ -197,63 +194,63 @@ The following lists all sbt-web related components and their versions at the tim
 
 #### WebJars
 
-[WebJars](http://www.webjars.org/) now play an important role in the provision of assets to a Play application. For example you can declare that you will be using the popular [Bootstrap library](http://getbootstrap.com/) simply by adding the following dependency in your build file:
+[WebJars](http://www.webjars.org/) joue maintenant un rôle important dans la fourniture des ressources d'une application Play. Par example vous pouvez déclarer que vous utilisez le populaire [Bootstrap library](http://getbootstrap.com/) simplement en ajoutant la dépendence suivant dans votre fichier de build:
 
 ```scala
 libraryDependencies += "org.webjars" % "bootstrap" % "3.0.0"
 ```
 
-WebJars are automatically extracted into a `lib` folder relative to your public assets for convenience. For example if you declared a dependency on [RequireJs](http://requirejs.org/) then you can reference it from a view using a line like:
+Les WebJars sont automatiquement extraits dans un dossier `lib` relatif à vos ressources publique pour plus de commodité. Par exemple si vous déclarez une dépendence sur [RequireJs](http://requirejs.org/) alors vous pouvez la référencer d'une vue en un ligne telle que:
 
 ```html
 <script data-main="@routes.Assets.at("javascripts/main.js")" type="text/javascript" src="@routes.Assets.at("lib/requirejs/require.js")"></script>
 ```
 
-Note the `lib/requirejs/require.js` path. The `lib` folder denotes the extract WebJar assets, the `requirejs` folder corresponds to the WebJar artifactId, and the `require.js` refers to the required asset at the root of the WebJar.
+Notez le chemin `lib/requirejs/require.js`. Le dossier `lib` dénotes l'extraction de la ressource WebJar, le dossier `requirejs` correspond à l'artifactId de WebJar, et le `require.js` fait références à la ressources requise à la racine du WebJar.
 
 #### npm
 
-[npm](https://www.npmjs.org/) can be used as well as WebJars by declaring a `package.json` file in the root of your project. Assets from npm packages are extracted into the same `lib` folder as WebJars so that, from a code perspective, there is no concern whether the asset is sourced from a WebJar or from an npm package.
+[npm](https://www.npmjs.org/) peut être utilisé comme WebJars en déclarant un fichier `package.json` à la racine de votre projet. Les ressources des paquetages npm sont extraites dans le même dossier `lib` que WebJars, ainsi au point de vue du code, il n'y a pas à se préoccuper si la sources d'une ressources est un WebJar ou un paquetage npm.
 
 ***
 
-From your perspective we aim to offer feature parity with previous releases of Play. While things have changed significantly under the hood the transition for you should be minor. The remainder of this section looks at each part of Play that has been replaced with sbt-web and describes what should be changed.
+De votre point de vue, nous visons à offrir la parité des fonctionnalité avec les versions précédentes de Play. Alors que les choses ont beaucoup changé sous le capot, la transition pour vous devrait être facile. Le reste de cette section examine chaque partie de Play qui a été remplacé par SBT-web et décrit ce qui doit être changé.
 
 #### CoffeeScript
 
-You must now declare the plugin, typically in your plugins.sbt file:
+Vous devez maintenant déclarer le plugin, typiquement dans votre fichier plugins.sbt:
 
 ```scala
 addSbtPlugin("com.typesafe.sbt" % "sbt-coffeescript" % "1.0.0")
 ```
 
-Coffeescript options have changed. The new options are:
+Les options de Coffeescript ont changé. Les nouvelles options sont:
 
-* `sourceMaps` When set, generates sourceMap files. Defaults to `true`.
+* `sourceMaps` Lorsque elle est activée, elle génère les fichiers sourceMap. Défault à `true`.
 
   `CoffeeScriptKeys.sourceMaps := true`
 
-* `bare` When set, generates JavaScript without the [top-level function safety wrapper](http://coffeescript.org/#lexical-scope). Defaults to `false`.
+* `bare` lorsque elle est activée, génère le JavaScript sans le [top-level function safety wrapper](http://coffeescript.org/#lexical-scope). Défault à `false`.
 
   `CoffeeScriptKeys.bare := false`
 
-For more information please consult [the plugin's documentation](https://github.com/sbt/sbt-coffeescript#sbt-coffeescript).
+Pour plus plus d'information consulter [la documentation du plugin](https://github.com/sbt/sbt-coffeescript#sbt-coffeescript).
 
 #### LESS
 
-You must now declare the plugin, typically in your plugins.sbt file:
+Vous devez maintenant déclarer le plugin, typiquement dans votre fichier plugins.sbt:
 
 ```scala
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.0.0")
 ```
 
-Entry points are now declared using a filter. For example, to declare that `foo.less` and `bar.less` are required:
+Les points d'entrée sont maintenant déclarés en utilisant un filtre. Par exemple, pour déclarer que `foo.less` et `bar.less` sont requis:
 
 ```scala
 includeFilter in (Assets, LessKeys.less) := "foo.less" | "bar.less"
 ```
 
-If you previously used the behavior where files with an underscore preceding the less filename were ignored but all other less files were compiled then use the following filters:
+Si vous utilisiez précédemment le fait que les fichiers commençant par un underscore étaient ignorés mais que tout les autres étaient compilés alors utilisez maintenant les filtres suivant:
 
 ```scala
 includeFilter in (Assets, LessKeys.less) := "*.less"
@@ -261,6 +258,7 @@ includeFilter in (Assets, LessKeys.less) := "*.less"
 excludeFilter in (Assets, LessKeys.less) := "_*.less"
 ```
 
+Différemment de Play 2.2, the plugin sbt-less laisse n'importe quel utilisateur télécharger le fichier source original less et les sources maps générés. 
 Unlike Play 2.2, the sbt-less plugin allows any user to download the original LESS source file and generated source maps. It allows easier debugging in modern web browsers. This feature is enabled even in production mode.
 
 The plugin's options are:
