@@ -1,9 +1,9 @@
 <!--- Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com> -->
 # Play %PLAY_VERSION% documentation
 
-> Play est un framework pour application web Java et Scala très productif qui intègre les composants et les APIs neccessaires au développement d'application web moderne. 
+> Play est un framework pour application web Java et Scala très productif qui intègre les composants et les APIs nécessaires au développement d'applications web modernes. 
 >
-> Play s'appuie sur une architecture légère, sans état, web friendly et présente une consomation des resources (CPU, mémoire, threads) prédictible et minimale pour des applications pouvant supporter une monté en charge importante en s'appuyant sur son modèle "reactive", basé sur les IO des Iteratee.
+> Play s'appuie sur une architecture légère, sans état, web friendly et présente une consommation des ressources (CPU, mémoire, threads) prédictible et minimale pour des applications pouvant supporter une montée en charge importante en s'appuyant sur son modèle "reactive", basé sur les IO des Iteratee.
 
 - [[Quoi de neuf dans Play 2.3?|Highlights23]] / [[Play 2.3 Guide de Migration|Migration23]]
 - [[Quoi de neuf dans Play 2.2?|Highlights22]] / [[Play 2.2 Guide de Migration|Migration22]]
@@ -24,7 +24,7 @@
 1. [[Play for Scala developers|ScalaHome]]
 1. [[Play for Java developers|JavaHome]]
 
-## En Details
+## En Détails
 
 1. [[Le système de build|Build]]
     1. [[Au sujet de la configuration de sbt|SBTSettings]]
@@ -37,7 +37,7 @@
     1. [[Utiliser RequireJS|RequireJS-support]]
 1. [[Développer avec la base de donnée H2 en mémoire|Developing-with-the-H2-Database]]
 1. [[Gérer les évolutions de la base de donnée|Evolutions]]
-1. [[Syntaxe et fonctionnalité des fichier de configuration|Configuration]]
+1. [[Syntaxe et fonctionnalité des fichiers de configuration|Configuration]]
     1. [[Configurer le secret de l'application|ApplicationSecret]]
     1. [[Configurer le pool de connexion JDBC|SettingsJDBC]]
     1. [[Configurer le pool de thread de Play|ThreadPools]]
@@ -50,7 +50,7 @@
     1. [[Configuration supplémentaire|ProductionConfiguration]]
     1. [[Mise en place d'un serveur HTTP frontal|HTTPServer]]
     1. [[Configurer HTTPS|ConfiguringHttps]]
-    1. [[Deployer dans le cloud|DeployingCloud]]
+    1. [[Déployer dans le cloud|DeployingCloud]]
 
 ## Documentation supplémentaire
 
@@ -73,7 +73,7 @@
 
 ## A propos de Play
 
-1. [[La phylosophie de Play|Philosophy]]
+1. [[La philosophie de Play|Philosophy]]
 1. [[Play User Groups|PlayUserGroups]]
 
 ## Modules et plugins
